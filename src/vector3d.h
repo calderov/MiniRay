@@ -6,7 +6,7 @@
 
 class vector3d {
   public:
-    double e[3];
+    double e[3]; // TODO: Make private
 
     // Constructors
     vector3d() : e{0, 0, 0} {}
