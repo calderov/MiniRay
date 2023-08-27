@@ -10,14 +10,14 @@ double hit_sphere(const point3d& center, double radius, const ray& r) {
     vector3d oc = r.origin() - center;
 
     double a = dot(r.direction(), r.direction());
-    double b = 2.0 * dot(r.direction(), oc);
+    double h = dot(r.direction(), oc);
     double c = dot(oc, oc) - radius * radius;
 
-    double discriminant = b * b - 4 * a * c;
+    double discriminant = h * h - a * c;
     if (discriminant < 0) {
         return -1.0;
     } else  {
-        return (-b - sqrt(discriminant)) / (2.0 * a);
+        return (-h - sqrt(discriminant)) / a;
     }
 }
 
