@@ -18,7 +18,7 @@ class ray {
     point3d direction() const { return dir;}
 
     // Point at
-    point3d at(double t) { return orig + t * dir; } 
+    point3d at(double t) const { return orig + t * dir; } 
 };
 
 #endif
