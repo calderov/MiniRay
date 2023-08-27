@@ -6,7 +6,23 @@
 
 using namespace std;
 
+bool hit_sphere(const point3d& center, double radius, const ray& r) {
+    vector3d oc = r.origin() - center;
+
+    double a = dot(r.direction(), r.direction());
+    double b = 2.0 * dot(r.direction(), oc);
+    double c = dot(oc, oc) - radius * radius;
+
+    double discriminant = b * b - 4 * a * c;
+
+    return (discriminant >= 0); 
+}
+
 color ray_color(const ray& r) {
+    if (hit_sphere(point3d(0, 0, -1), 0.5, r)) {
+        return color(1, 0, 0);
+    }
+
     vector3d unit_direction = unit_vector(r.direction());
     double a = 0.5 * (unit_direction.y() + 1.0);
     return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
