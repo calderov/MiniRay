@@ -1,2 +1,5 @@
 miniray
 .vscode/
+src/main
+*.ppm
+*.png
