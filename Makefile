@@ -11,7 +11,7 @@ debug:
 	$(CC) $(DEBUGFLAGS) src/main.cpp -o miniray
 
 clean:
-	rm src/main
-	rm miniray
-	rm *.ppm
-	rm *.png
+	rm -f src/main
+	rm -f miniray
+	rm -f *.ppm
+	rm -f *.png
