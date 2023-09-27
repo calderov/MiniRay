@@ -1,31 +1,18 @@
+#include "rtweekend.h"
+
 #include "color.h"
-#include "ray.h"
-#include "vector3d.h"
+#include "hittable.h"
+#include "hittable_list.h"
+#include "sphere.h"
 
 #include <iostream>
 
 using namespace std;
 
-double hit_sphere(const point3d& center, double radius, const ray& r) {
-    vector3d oc = r.origin() - center;
-
-    double a = dot(r.direction(), r.direction());
-    double h = dot(r.direction(), oc);
-    double c = dot(oc, oc) - radius * radius;
-
-    double discriminant = h * h - a * c;
-    if (discriminant < 0) {
-        return -1.0;
-    } else  {
-        return (-h - sqrt(discriminant)) / a;
-    }
-}
-
-color ray_color(const ray& r) {
-    double t = hit_sphere(point3d(0, 0, -1), 0.5, r);
-    if (t > 0) {
-        vector3d N = unit_vector(r.at(t) - vector3d(0, 0, -1));
-        return 0.5 * color(N.x() + 1, N.y() + 1, N.z() + 1);
+color ray_color(const ray& r, const hittable& world) {
+    hit_record rec;
+    if (world.hit(r, 0, infinity, rec)) {
+        return 0.5 * (rec.normal + color(1,1,1));
     }
 
     vector3d unit_direction = unit_vector(r.direction());
@@ -37,6 +24,11 @@ int main() {
     // Image
     int image_width = 1366;
     int image_height = 720;
+
+    // World
+    hittable_list world;
+    world.add(make_shared<sphere>(point3d(0, 0, -1), -0.5));
+    world.add(make_shared<sphere>(point3d(0, -100.5, -1), 100));
 
     // Camera
     double focal_length = 1.0;
@@ -65,7 +57,7 @@ int main() {
             point3d pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
             vector3d ray_direction = pixel_center - camera_center;
             ray r = ray(camera_center, ray_direction);
-            color pixel_color = ray_color(r);
+            color pixel_color = ray_color(r, world);
             write_color(cout, pixel_color);
         }
     }
