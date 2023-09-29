@@ -12,7 +12,7 @@ class sphere: public hittable {
   public:
     sphere(point3d _center, double _radius) : center(_center), radius(_radius) {}
 
-    bool hit(const ray& r, double ray_tmin, double ray_tmax, hit_record& rec) const override {
+    bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
         vector3d oc = r.origin() - center;
         
         double a = r.direction().length_squared();
@@ -30,8 +30,8 @@ class sphere: public hittable {
         double root1 = (-half_b - sqrt_discriminant) / a;
         double root2 = (-half_b + sqrt_discriminant) / a;
         
-        // Return false if none of the roots are in the acceptable range
-        if ((root1 <= ray_tmin || root1 >= ray_tmax) && (root2 <= ray_tmin || root2 >= ray_tmax)) {
+        // Find the nearest root that lies in the acceptable range.
+        if (!ray_t.sorrunds(root1) && !ray_t.sorrunds(root2)) {
             return false;
         }
 
