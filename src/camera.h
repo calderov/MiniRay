@@ -55,7 +55,7 @@ class camera {
         std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
         for (int j = 0; j < image_height; j++) {
-            std::clog << "\rRendering: " << (int)((double)(j) / (image_height -  1) * 100) << "%" << ' ' << std::flush;
+            std::clog << "\rRendering: " << (int)((double)(j) / (image_height -  1) * 100) << "% " << std::flush;
             for (int i = 0; i < image_width; i++) {
                 point3d pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
                 vector3d ray_direction = pixel_center - center;
