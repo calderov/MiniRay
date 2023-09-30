@@ -44,10 +44,28 @@ class camera {
         return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
     }
 
+    // Get a randomly sampled camera ray for the pixel location i, j
+    ray get_ray(int i, int j) const {
+        point3d pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
+        point3d pixel_sample = pixel_center + pixel_sample_square();
+        
+        vector3d ray_origin = center;
+        vector3d ray_direction = pixel_sample - ray_origin;
+
+        return ray(ray_origin, ray_direction);
+    }
+
+    vector3d pixel_sample_square() const {
+        double px = 0.5 + random_double();
+        double py = 0.5 + random_double();
+        return (px * pixel_delta_u) + (py * pixel_delta_v);
+    }
+
   public:
-    double image_width = 1366;
-    double image_height = 720;
     //double aspect_ratio = 16.0 / 9.0;
+    int image_width = 1366;
+    int image_height = 720;
+    int samples_per_pixel = 10;
 
     void render(const hittable& world) {
         initialize();
@@ -57,11 +75,15 @@ class camera {
         for (int j = 0; j < image_height; j++) {
             std::clog << "\rRendering: " << (int)((double)(j) / (image_height -  1) * 100) << "% " << std::flush;
             for (int i = 0; i < image_width; i++) {
-                point3d pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
-                vector3d ray_direction = pixel_center - center;
-                ray r = ray(center, ray_direction);
-                color pixel_color = ray_color(r, world);
-                write_color(std::cout, pixel_color);
+                color pixel_color(0, 0, 0);
+                
+                // Take random samples for each pixel
+                for (int sample = 0; sample < samples_per_pixel; sample++) {
+                    ray r = get_ray(i, j);
+                    pixel_color += ray_color(r, world);
+                }
+                
+                write_color(std::cout, pixel_color, samples_per_pixel);
             }
         }
 

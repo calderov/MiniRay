@@ -16,6 +16,7 @@ int main() {
 
     // Camera
     camera cam;
+    cam.samples_per_pixel = 1;
 
     // Render
     cam.render(world);
