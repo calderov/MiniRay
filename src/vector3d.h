@@ -54,6 +54,16 @@ class vector3d {
     double length_squared() const {
         return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
     }
+
+    // Random vector
+    static vector3d random() {
+        return vector3d(random_double(), random_double(), random_double());
+    }
+
+    // Restricted random vector
+    static vector3d random(double min, double max) {
+        return vector3d(random_double(min, max), random_double(min, max), random_double(min, max));
+    }
 };
 
 // Utility functions
@@ -109,6 +119,37 @@ inline vector3d cross(const vector3d &u, const vector3d &v) {
 // Unit vector
 inline vector3d unit_vector(vector3d v) {
     return v / v.length();
+}
+
+// Random vector in unit sphere
+inline vector3d random_in_unit_sphere() {
+    while (true)
+    {
+        vector3d p = vector3d::random(-1, 1);
+        if (p.length_squared() < 1) {
+            return p;
+        }
+    }
+    
+}
+
+// Random unit vector
+inline vector3d random_unit_vector() {
+    return unit_vector(random_in_unit_sphere());
+}
+
+// Random vector on hemisphere
+inline vector3d random_on_hemisphere(const vector3d& normal) {
+    vector3d on_unit_sphere = random_unit_vector();
+    
+    // If the vector is in the same hemisphere as the normal
+    // return it as is. 
+    if (dot(on_unit_sphere, normal) > 0.0) {
+        return on_unit_sphere;
+    }
+
+    // Otherwise return it with inverted orientation
+    return -on_unit_sphere;
 }
 
 // Set point3d as an alias for vector3d, this helps with clarity on some geometric procedures
