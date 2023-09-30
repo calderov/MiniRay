@@ -4,6 +4,7 @@
 #include "rtweekend.h"
 #include "color.h"
 #include "hittable.h"
+#include "material.h"
 
 #include <iostream>
 
@@ -42,8 +43,13 @@ class camera {
         }
 
         if (world.hit(r, interval(0.001, infinity), rec)) {
-            vector3d direction = rec.normal + random_unit_vector(); // Lambertian reflection
-            return 0.5 * ray_color(ray(rec.p, direction), depth - 1, world);
+            ray scattered;
+            color attenuation;
+
+            if (rec.mat->scatter(r, rec, attenuation, scattered))
+                return attenuation * ray_color(scattered, depth-1, world);
+            
+            return color(0,0,0);
         }
 
         vector3d unit_direction = unit_vector(r.direction());

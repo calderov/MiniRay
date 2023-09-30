@@ -1,12 +1,16 @@
 #ifndef HITTABLE_H
 #define HITTABLE_H
 
+#include "rtweekend.h"
 #include "ray.h"
+
+class material;
 
 class hit_record {
   public:
     point3d p;
     vector3d normal;
+    shared_ptr<material> mat;
     double t;
     bool front_face;
 
@@ -14,7 +18,7 @@ class hit_record {
       // Sets the hit record normal vector.
       // NOTE: The parameter 'outward_normal' is assumed to have unit legth.
       front_face = dot(r.direction(), outward_normal) < 0;
-      normal = front_face ? outward_normal : - outward_normal;
+      normal = front_face ? outward_normal : -outward_normal;
     }
 };
 

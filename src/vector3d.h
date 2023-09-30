@@ -55,6 +55,12 @@ class vector3d {
         return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
     }
 
+    // Check if the vector is close to zero in all dimensions
+    bool near_zero() const {
+        auto s = 1e-8;
+        return (fabs(e[0]) < s) && (fabs(e[1]) < s) && (fabs(e[2]) < s);
+    }
+
     // Random vector
     static vector3d random() {
         return vector3d(random_double(), random_double(), random_double());
@@ -150,6 +156,10 @@ inline vector3d random_on_hemisphere(const vector3d& normal) {
 
     // Otherwise return it with inverted orientation
     return -on_unit_sphere;
+}
+
+vector3d reflect(const vector3d& v, const vector3d& n) {
+    return v - 2 * dot(v, n) * n;
 }
 
 // Set point3d as an alias for vector3d, this helps with clarity on some geometric procedures
