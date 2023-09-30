@@ -16,7 +16,10 @@ int main() {
 
     // Camera
     camera cam;
-    cam.samples_per_pixel = 1;
+    cam.image_width = 1366;
+    cam.image_height = 720;
+    cam.samples_per_pixel = 50;
+    cam.max_depth = 10;
 
     // Render
     cam.render(world);
