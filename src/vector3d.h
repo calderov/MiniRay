@@ -161,8 +161,15 @@ inline vector3d random_on_hemisphere(const vector3d& normal) {
     return -on_unit_sphere;
 }
 
-vector3d reflect(const vector3d& v, const vector3d& n) {
+inline vector3d reflect(const vector3d& v, const vector3d& n) {
     return v - 2 * dot(v, n) * n;
+}
+
+inline vector3d refract(const vector3d& uv, const vector3d& n, double etai_over_etat) {
+    auto cos_theta = fmin(dot(-uv, n), 1.0);
+    vector3d r_out_perp =  etai_over_etat * (uv + cos_theta*n);
+    vector3d r_out_parallel = -sqrt(fabs(1.0 - r_out_perp.length_squared())) * n;
+    return r_out_perp + r_out_parallel;
 }
 
 // Set point3d as an alias for vector3d, this helps with clarity on some geometric procedures
