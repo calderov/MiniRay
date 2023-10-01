@@ -1,8 +1,8 @@
 #ifndef SPHERE_H
 #define SPHERE_H
 
+#include "rtweekend.h"
 #include "hittable.h"
-#include "vector3d.h"
 
 class sphere: public hittable {
   private:
@@ -16,7 +16,7 @@ class sphere: public hittable {
         vector3d oc = r.origin() - center;
         
         double a = r.direction().length_squared();
-        double half_b = dot(r.direction(), oc);
+        double half_b = dot(oc, r.direction());
         double c = oc.length_squared() - radius * radius;
 
         double discriminant = half_b * half_b - a * c;

@@ -4,6 +4,9 @@
 #include<cmath>
 #include<iostream>
 
+using std::sqrt;
+using std::fabs;
+
 class vector3d {
   public:
     double e[3]; // TODO: Make private
@@ -47,7 +50,7 @@ class vector3d {
 
     // Vector length
     double length() const {
-        return std::sqrt(length_squared());
+        return sqrt(length_squared());
     }
 
     // Vector length squared
