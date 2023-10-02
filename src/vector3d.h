@@ -130,6 +130,16 @@ inline vector3d unit_vector(vector3d v) {
     return v / v.length();
 }
 
+inline vector3d random_in_unit_disk() {
+    while (true)
+    {
+        vector3d p = vector3d(random_double(-1, 1), random_double(-1, 1), 0);
+        if (p.length_squared() < 1) {
+            return p;
+        }
+    }    
+}
+
 // Random vector in unit sphere
 inline vector3d random_in_unit_sphere() {
     while (true)

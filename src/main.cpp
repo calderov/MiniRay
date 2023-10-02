@@ -27,10 +27,14 @@ int main() {
     cam.image_height = 720;
     cam.samples_per_pixel = 50;
     cam.max_depth = 10;
+    
     cam.vfov = 20;
     cam.lookfrom = point3d(-2, 2, 1);
     cam.lookat = point3d(0, 0, -1);
     cam.vup = vector3d(0, 1, 0);
+
+    cam.defocus_angle = 10.0;
+    cam.focus_dist = 3.4;
 
     // Render
     cam.render(world);
