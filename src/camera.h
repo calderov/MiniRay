@@ -7,6 +7,7 @@
 #include "material.h"
 
 #include <iostream>
+#include <vector>
 
 class camera {
   private:
@@ -17,6 +18,7 @@ class camera {
     vector3d u, v, w;       // Camera frame basis vectors
     vector3d defocus_disk_u; // Defocus disk horizontal radius
     vector3d defocus_disk_v; // Defocus disk vertical radius
+    std::vector<color> image;// Image result
 
     void initialize() {
         // Setup viewport
@@ -47,6 +49,10 @@ class camera {
         double defocus_radius = focus_dist * tan(degrees_to_radians(defocus_angle / 2));
         defocus_disk_u = u * defocus_radius;
         defocus_disk_v = v * defocus_radius;
+
+        // Initialize output image
+        image.resize(image_height * image_width);
+        std::fill(image.begin(), image.end(), color(0, 0, 0));
     }
 
     color ray_color(const ray& r, int depth, const hittable& world) const {
@@ -114,25 +120,37 @@ class camera {
     void render(const hittable& world) {
         initialize();
 
-        std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
-
         for (int j = 0; j < image_height; j++) {
-            std::clog << "\rRendering: " << (int)((double)(j) / (image_height -  1) * 100) << "% " << std::flush;
             for (int i = 0; i < image_width; i++) {
-                color pixel_color(0, 0, 0);
-                
+                // Print progress
+                if (i * j % image_height == 0) {    
+                    int percent = (double)(j) / (image_height - 1) * 100;
+                    std::clog << "\rRendering: " << percent << "% " << std::flush;
+                }
+
                 // Take random samples for each pixel
                 for (int sample = 0; sample < samples_per_pixel; sample++) {
                     ray r = get_ray(i, j);
-                    pixel_color += ray_color(r, max_depth, world);
+                    image[j * image_width + i] += ray_color(r, max_depth, world);
                 }
-                
-                // Apply gamma correction
-                pixel_color = gamma_correction(pixel_color, samples_per_pixel);
-
-                // Write color to output stream
-                write_color(std::cout, pixel_color);
             }
+        }
+    }
+
+    void write_image() {
+        std::clog << "\n\nSaving...\n" << std::flush;
+
+        std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+
+        for (int i = 0; i < image.size(); i++) {
+            // Get ith pixel from image
+            color pixel_color = image[i];
+
+            // Apply gamma correction
+            pixel_color = gamma_correction(pixel_color, samples_per_pixel);
+
+            // Write color to output stream
+            write_color(std::cout, pixel_color);
         }
 
         std::clog << "\nDone\n";

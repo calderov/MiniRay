@@ -72,5 +72,8 @@ int main() {
     // Render
     cam.render(world);
 
+    // Write rendered image to stdout
+    cam.write_image();
+
     return 0;
 }
