@@ -127,7 +127,11 @@ class camera {
                     pixel_color += ray_color(r, max_depth, world);
                 }
                 
-                write_color(std::cout, pixel_color, samples_per_pixel);
+                // Apply gamma correction
+                pixel_color = gamma_correction(pixel_color, samples_per_pixel);
+
+                // Write color to output stream
+                write_color(std::cout, pixel_color);
             }
         }
 

@@ -6,27 +6,29 @@
 // Set color as an alias for vector3d 
 using color = vector3d;
 
-inline double linear_to_gamma(double linear_component) {
-    return sqrt(linear_component);
-}
-
-void write_color(std::ostream &out, color pixel_color, int samples_per_pixel) {
+inline color gamma_correction(color pixel_color, int samples_per_pixel) {
     // Divide the color by the number of samples
     double r = pixel_color.x() / samples_per_pixel;
     double g = pixel_color.y() / samples_per_pixel;
     double b = pixel_color.z() / samples_per_pixel;
 
     // Apply gamma correction
-    r = linear_to_gamma(r);
-    g = linear_to_gamma(g);
-    b = linear_to_gamma(b);
+    r = sqrt(r);
+    g = sqrt(g);
+    b = sqrt(b);
 
-    // Write the translated [0,255] value of each color component.
+    // Truncate corrected values to be from 0 to 1
     static const interval intensity(0.000, 0.999);
+    
+    // Return gamma corrected color
+    return color(intensity.clamp(r), intensity.clamp(g), intensity.clamp(b));
+}
 
-    out << static_cast<int>(256 * intensity.clamp(r)) << ' '   // Red
-        << static_cast<int>(256 * intensity.clamp(g)) << ' '   // Green
-        << static_cast<int>(256 * intensity.clamp(b)) << '\n'; // Blue
+// Write color to output stream
+void write_color(std::ostream &out, color pixel_color) {
+    out << static_cast<int>(256 * pixel_color.x()) << ' '   // Red
+        << static_cast<int>(256 * pixel_color.y()) << ' '   // Green
+        << static_cast<int>(256 * pixel_color.z()) << '\n'; // Blue
 }
 
 #endif
