@@ -135,7 +135,7 @@ class camera {
                 rawProgress += n;
             }
 
-            percent = (double)(rawProgress) / 1080 * 100;
+            percent = (double)(rawProgress) / image_height * 100;
 
             // Print progress only if it has changed
             if (percent != lastPercent) {
