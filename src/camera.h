@@ -7,7 +7,9 @@
 #include "material.h"
 
 #include <iostream>
+#include <thread>
 #include <vector>
+#include <chrono>
 
 class camera {
   private:
@@ -19,6 +21,7 @@ class camera {
     vector3d defocus_disk_u; // Defocus disk horizontal radius
     vector3d defocus_disk_v; // Defocus disk vertical radius
     std::vector<color> image;// Image result
+    std::vector<int> render_progress; // Vector to keep track of the number of rows rendered by each thread
 
     void initialize() {
         // Setup viewport
@@ -53,6 +56,13 @@ class camera {
         // Initialize output image
         image.resize(image_height * image_width);
         std::fill(image.begin(), image.end(), color(0, 0, 0));
+
+        // Initialize render progress vector
+        render_progress.resize(maxThreads);
+        std::fill(render_progress.begin(), render_progress.end(), 0);
+
+        // Ensure there is at least one thread for rendering the scene
+        maxThreads = maxThreads > 0 ? maxThreads : 1;
     }
 
     color ray_color(const ray& r, int depth, const hittable& world) const {
@@ -102,6 +112,43 @@ class camera {
         return (px * pixel_delta_u) + (py * pixel_delta_v);
     }
 
+    void render_thread(const hittable& world, int threadId, int minRow, int maxRow) {
+        for (int j = minRow; j < maxRow; j++) {
+            for (int i = 0; i < image_width; i++) {
+                // Take random samples for each pixel
+                for (int sample = 0; sample < samples_per_pixel; sample++) {
+                    ray r = get_ray(i, j);
+                    image[j * image_width + i] += ray_color(r, max_depth, world);
+                }
+            }
+            render_progress[threadId] += 1;
+        }
+    }
+
+    void print_render_progress() {
+        std::clog << "\nRendering scene with " << maxThreads << " threads\n\n" << std::flush;
+        int percent = 0;
+        int lastPercent = -1;
+        int rawProgress = 0;
+        while (percent < 100) {
+            for (int& n : render_progress) {
+                rawProgress += n;
+            }
+
+            percent = (double)(rawProgress) / 1080 * 100;
+
+            // Print progress only if it has changed
+            if (percent != lastPercent) {
+                lastPercent = percent;
+                std::clog << "\rRendering: " << percent << "% " << std::flush;
+            }
+
+            rawProgress = 0;
+        }
+        std::clog << "\rRendering: " << percent << "% " << std::flush;
+        std::fill(render_progress.begin(), render_progress.end(), 0);
+    }
+
   public:
     // Camera parameters
     int image_width = 1366;      // Image width
@@ -115,26 +162,38 @@ class camera {
     vector3d vup     = vector3d(0, 1, 0); // Camera-relative "up" direction
 
     double  defocus_angle = 0; // Variation angle of rays through each pixel
-    double focus_dist = 10; // Distance from camera lookfrom point to plane of perfect focus
+    double focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
+
+    int maxThreads = 1; // Max number of threads available for the render step
 
     void render(const hittable& world) {
+        // Start render timer
+        const auto start{std::chrono::steady_clock::now()};
+        
+        // Initialize camera
         initialize();
 
-        for (int j = 0; j < image_height; j++) {
-            for (int i = 0; i < image_width; i++) {
-                // Print progress
-                if (i * j % image_height == 0) {    
-                    int percent = (double)(j) / (image_height - 1) * 100;
-                    std::clog << "\rRendering: " << percent << "% " << std::flush;
-                }
-
-                // Take random samples for each pixel
-                for (int sample = 0; sample < samples_per_pixel; sample++) {
-                    ray r = get_ray(i, j);
-                    image[j * image_width + i] += ray_color(r, max_depth, world);
-                }
-            }
+        // Spawn render threads
+        std::vector<std::thread> threads;
+        for (int i = 0; i < maxThreads; i++) {
+            int offset = image_height / maxThreads;
+            int minRow = i * offset;
+            int maxRow = i < maxThreads - 1 ? minRow + offset : image_height;
+            threads.push_back(std::thread(&camera::render_thread, this, std::ref(world), i, minRow, maxRow));
         }
+
+        // Print render progress
+        print_render_progress();
+
+        // Await for render threads
+        for (int i = 0; i < maxThreads; i++) {
+            threads[i].join();
+        }
+
+        // Stop render timer and print elapsed time
+        const auto end{std::chrono::steady_clock::now()};
+        const std::chrono::duration<double> elapsed_seconds{end - start};
+        std::clog << "\n\nRender completed in: " << elapsed_seconds.count() << " seconds" << std::flush;
     }
 
     void write_image() {
