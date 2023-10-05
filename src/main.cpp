@@ -6,6 +6,8 @@
 #include "material.h"
 #include "sphere.h"
 
+#include <thread>
+
 int main() {
     // Materials
     shared_ptr<material> ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
@@ -69,7 +71,7 @@ int main() {
     cam.defocus_angle = 0.6;
     cam.focus_dist    = 10.0;
 
-    cam.maxThreads = 4;
+    cam.maxThreads = std::thread::hardware_concurrency();
 
     // Render
     cam.render(world);
