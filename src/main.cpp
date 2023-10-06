@@ -8,52 +8,71 @@
 
 #include <thread>
 
+class materials_catalog {
+  public:
+    shared_ptr<material>concrete = make_shared<lambertian>(color(0.5, 0.5, 0.5));
+    shared_ptr<material>glass    = make_shared<dielectric>(1.5);
+    shared_ptr<material>gold     = make_shared<metal>(create_color(221, 183, 130), 0.0);
+    shared_ptr<material>silver   = make_shared<metal>(create_color(154, 163, 186), 0.0);
+
+    shared_ptr<material> random_material() {
+        double material_type = random_double();
+        shared_ptr<material> result_material;
+        
+        // Diffuse
+        if (material_type < 0.8) {
+            color albedo = color::random() * color::random();
+            result_material = make_shared<lambertian>(albedo);
+        }
+
+        // Metal
+        else if (material_type < 0.95) {
+            color albedo = color::random(0.5, 1);
+            double fuzz = random_double(0, 0.5);
+            result_material = make_shared<metal>(albedo, fuzz);
+        }
+
+        // Glass
+        else {
+            result_material = make_shared<dielectric>(1.5);
+        }
+
+        return result_material;
+    }
+
+    color create_color(double r, double g, double b) {
+        r = r / 255;
+        g = g / 255;
+        b = b / 255;
+        return color(r, g, b);
+    }
+};
+
 int main() {
     // Materials
-    shared_ptr<material> ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
-    shared_ptr<material> material1 = make_shared<dielectric>(1.5);
-    shared_ptr<material> material2 = make_shared<lambertian>(color(0.4, 0.2, 0.1));
-    shared_ptr<material> material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
+    materials_catalog materials;
 
     // World
     hittable_list world;
 
-    world.add(make_shared<sphere>(point3d(0,-1000,0), 1000, ground_material));
+    world.add(make_shared<sphere>(point3d(0,-1000,0), 1000, materials.concrete));
+    world.add(make_shared<sphere>(point3d(-4, 1, 0),  1.0,  materials.gold));
+    world.add(make_shared<sphere>(point3d(0,  1, 0),  1.0,  materials.glass));
+    world.add(make_shared<sphere>(point3d(4,  1, 0),  1.0,  materials.silver));
 
     for (int a = -11; a < 11; a++) {
         for (int b = -11; b < 11; b++) {
-            double choose_mat = random_double();
-            point3d center(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
+            double radius = 0.2;
+            point3d center(a + 0.9 * random_double(), radius, b + 0.9 * random_double());
 
-            if ((center - point3d(4, 0.2, 0)).length() > 0.9) {
-                shared_ptr<material> sphere_material;
+            if ((center - point3d(-4, 1, 0)).length() < 1.05 ||
+                (center - point3d( 0, 1, 0)).length() < 1.05 ||
+                (center - point3d( 4, 1, 0)).length() < 1.05)
+                continue;
 
-                // Diffuse
-                if (choose_mat < 0.8) {
-                    color albedo = color::random() * color::random();
-                    sphere_material = make_shared<lambertian>(albedo);
-                } 
-                
-                // Metal
-                else if (choose_mat < 0.95) {
-                    color albedo = color::random(0.5, 1);
-                    double fuzz = random_double(0, 0.5);
-                    sphere_material = make_shared<metal>(albedo, fuzz);
-                } 
-                
-                // Glass
-                else {
-                    sphere_material = make_shared<dielectric>(1.5);
-                }
-
-                world.add(make_shared<sphere>(center, 0.2, sphere_material));
-            }
+        world.add(make_shared<sphere>(center, radius, materials.random_material()));
         }
     }
-
-    world.add(make_shared<sphere>(point3d(0, 1, 0), 1.0, material1));
-    world.add(make_shared<sphere>(point3d(-4, 1, 0), 1.0, material2));
-    world.add(make_shared<sphere>(point3d(4, 1, 0), 1.0, material3));
 
     // Camera
     camera cam;
