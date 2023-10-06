@@ -71,7 +71,7 @@ int main() {
     cam.defocus_angle = 0.6;
     cam.focus_dist    = 10.0;
 
-    cam.maxThreads = std::thread::hardware_concurrency();
+    cam.max_threads = std::thread::hardware_concurrency();
 
     // Render
     cam.render(world);

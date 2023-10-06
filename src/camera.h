@@ -58,11 +58,11 @@ class camera {
         std::fill(image.begin(), image.end(), color(0, 0, 0));
 
         // Initialize render progress vector
-        render_progress.resize(maxThreads);
+        render_progress.resize(max_threads);
         std::fill(render_progress.begin(), render_progress.end(), 0);
 
         // Ensure there is at least one thread for rendering the scene
-        maxThreads = maxThreads > 0 ? maxThreads : 1;
+        max_threads = max_threads > 0 ? max_threads : 1;
     }
 
     color ray_color(const ray& r, int depth, const hittable& world) const {
@@ -126,7 +126,7 @@ class camera {
     }
 
     void print_render_progress() {
-        std::clog << "\nRendering scene with " << maxThreads << " threads\n\n" << std::flush;
+        std::clog << "\nRendering scene with " << max_threads << " threads\n\n" << std::flush;
         int percent = 0;
         int lastPercent = -1;
         int rawProgress = 0;
@@ -164,7 +164,7 @@ class camera {
     double  defocus_angle = 0; // Variation angle of rays through each pixel
     double focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
 
-    int maxThreads = 1; // Max number of threads available for the render step
+    int max_threads = 1; // Max number of threads available for the render step
 
     void render(const hittable& world) {
         // Start render timer
@@ -175,10 +175,10 @@ class camera {
 
         // Spawn render threads
         std::vector<std::thread> threads;
-        for (int i = 0; i < maxThreads; i++) {
-            int offset = image_height / maxThreads;
+        for (int i = 0; i < max_threads; i++) {
+            int offset = image_height / max_threads;
             int minRow = i * offset;
-            int maxRow = i < maxThreads - 1 ? minRow + offset : image_height;
+            int maxRow = i < max_threads - 1 ? minRow + offset : image_height;
             threads.push_back(std::thread(&camera::render_thread, this, std::ref(world), i, minRow, maxRow));
         }
 
@@ -186,7 +186,7 @@ class camera {
         print_render_progress();
 
         // Await for render threads
-        for (int i = 0; i < maxThreads; i++) {
+        for (int i = 0; i < max_threads; i++) {
             threads[i].join();
         }
 
