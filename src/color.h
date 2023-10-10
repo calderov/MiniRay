@@ -38,7 +38,7 @@ class color_palette {
         r = r / 255;
         g = g / 255;
         b = b / 255;
-        return color(r * r, g * g, b * b);
+        return color(r, g, b);
     }
 
   public:

@@ -36,7 +36,7 @@ hittable_list get_scene_01() {
     color_palette colors;
 
     // Materials
-    shared_ptr<material>concrete = make_shared<lambertian>(colors.slate);
+    shared_ptr<material>concrete = make_shared<lambertian>(color(.5, .5, .55));
     shared_ptr<material>gold     = make_shared<metal>(colors.banana_500, 0.0);
     shared_ptr<material>silver   = make_shared<metal>(colors.silver, 0.0);
     shared_ptr<material>glass    = make_shared<dielectric>(1.5);
