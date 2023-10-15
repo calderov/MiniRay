@@ -15,3 +15,5 @@ clean:
 	rm -f miniray
 	rm -f *.ppm
 	rm -f *.png
+	rm -f *.bmp
+	rm -f *.jpg
