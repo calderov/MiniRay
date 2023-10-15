@@ -33,8 +33,8 @@ hittable_list get_scene_03() {
             color albedo = list_of_colors[index % list_of_colors.size()];
             shared_ptr<material> sphere_material = make_shared<lambertian>(albedo);
 
-            world.add(make_shared<sphere>(point3d(-12.5 + j * hspace, 1, -7.2 + i * vspace),  0.9,  sphere_material));
-            world.add(make_shared<sphere>(point3d(-12.5 + j * hspace, 1, -7.2 + i * vspace),  1.0,  glass));
+            world.add(make_shared<sphere>(point3d(-14.5 + j * hspace, 1, -9 + i * vspace),  0.9,  sphere_material));
+            world.add(make_shared<sphere>(point3d(-14.5 + j * hspace, 1, -9 + i * vspace),  1.0,  glass));
 
             index++;
         } 
