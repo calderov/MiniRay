@@ -126,7 +126,7 @@ class camera {
     }
 
     void print_render_progress() {
-        std::clog << "\nRendering scene with " << max_threads << " threads\n\n" << std::flush;
+        std::clog << "\nRendering scene with " << max_threads << " threads at " << image_width << "x" << image_height << " pixels\n\n" << std::flush;
         int percent = 0;
         int lastPercent = -1;
         int rawProgress = 0;
@@ -196,25 +196,84 @@ class camera {
         std::clog << "\n\nRender completed in: " << elapsed_seconds.count() << " seconds" << std::flush;
     }
 
-    void write_image() {
-        std::clog << "\n\nSaving...\n" << std::flush;
+    std::vector<unsigned char> get_bitmap_data()
+    {
+        // Transform screen to a bitmap friendly format [r,g,b, r,g,b, ... ,r,g,b]
+        std::vector<unsigned char> bitmap_data;
 
-        std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
-
-        for (int i = 0; i < image.size(); i++) {
+        for (size_t i = 0; i < image.size(); i++)
+        {
             // Get ith pixel from image
             color pixel_color = image[i];
 
             // Apply gamma correction
             pixel_color = gamma_correction(pixel_color, samples_per_pixel);
 
-            // Write color to output stream
-            write_color(std::cout, pixel_color);
+            // Push pixel into bitmap data
+            bitmap_data.push_back((unsigned char)(pixel_color.z() * 255)); // Blue
+            bitmap_data.push_back((unsigned char)(pixel_color.y() * 255)); // Green
+            bitmap_data.push_back((unsigned char)(pixel_color.x() * 255)); // Red
         }
 
-        std::clog << "\nDone\n";
+        return bitmap_data;
     }
-   
+
+    void write_image(std::string filename)
+    {
+        // Transform image to a bitmap friendly format [r,g,b, r,g,b, ... ,r,g,b]
+        std::vector<unsigned char> image = this->get_bitmap_data();
+
+        // Define file pointer and size
+        FILE* f;
+        int file_size = 54 + 3 * image_width * image_height;
+
+        // Define bitmap headers, info and padding
+        unsigned char bmp_header[14] = {
+            'B','M',  // Mime type
+            0,0,0,0,  // Size in bytes
+            0,0,0,0,  // App data 
+            54,0,0,0  // Data offset start
+        };
+        unsigned char bmp_info[40] = {
+            40,0,0,0, // Info HD size
+            0,0,0,0,  // Width
+            0,0,0,0,  // Height
+            1,0,      // # color planes
+            24,0      // Bits per pixel
+        };
+        unsigned char bmp_pad[3] = { 0,0,0 };
+
+        // Set headers and info
+        bmp_header[2] = (unsigned char)(file_size);
+        bmp_header[3] = (unsigned char)(file_size >> 8);
+        bmp_header[4] = (unsigned char)(file_size >> 16);
+        bmp_header[5] = (unsigned char)(file_size >> 24);
+
+        bmp_info[4] = (unsigned char)(image_width);
+        bmp_info[5] = (unsigned char)(image_width >> 8);
+        bmp_info[6] = (unsigned char)(image_width >> 16);
+        bmp_info[7] = (unsigned char)(image_width >> 24);
+
+        bmp_info[8] = (unsigned char)(image_height);
+        bmp_info[9] = (unsigned char)(image_height >> 8);
+        bmp_info[10] = (unsigned char)(image_height >> 16);
+        bmp_info[11] = (unsigned char)(image_height >> 24);
+
+        // Write headers and info to file
+        f = fopen(filename.c_str(), "wb");
+        fwrite(bmp_header, 1, 14, f);
+        fwrite(bmp_info, 1, 40, f);
+
+        // Write data to file
+        for (int i = 0; i < image_height; i++)
+        {
+            fwrite(&image[0] + (image_width * (image_height - i - 1) * 3), 3, image_width, f);
+            fwrite(bmp_pad, 1, (4 - (image_width * 3) % 4) % 4, f);
+        }
+
+        // Close file
+        fclose(f);
+    }
 };
 
 #endif

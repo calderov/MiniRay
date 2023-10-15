@@ -19,10 +19,10 @@ int main() {
     cam.image_width       = 1920;
     cam.image_height      = 1080;
     cam.samples_per_pixel = 50;
-    cam.max_depth         = 10;
+    cam.max_depth         = 50;
 
-    cam.vfov     = 20;
-    cam.lookfrom = point3d(0, 30, 20);
+    cam.vfov     = 17;
+    cam.lookfrom = point3d(0, 80, 0);
     cam.lookat   = point3d(0, 0, 0);
     cam.vup      = vector3d(0, 0, -1);
 
@@ -43,8 +43,12 @@ int main() {
     // Render
     cam.render(world);
 
-    // Write rendered image to stdout
-    cam.write_image();
+    // Write rendered image to bitmap file
+    std::string filename = "scene03.bmp";
+    std::clog << "\n\nSaving " << filename << "...\n" << std::flush;
+    cam.write_image(filename);
+    std::clog << "\nDone\n";
+
 
     return 0;
 }
